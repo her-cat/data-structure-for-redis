@@ -52,14 +52,19 @@ static intset *intsetResize(intset *is, uint32_t len) {
 	return realloc(is, len * is->encoding);
 }
 
+/* 搜索 value 在 intset 中的位置。 */
 static uint8_t intsetSearch(intset *is, uint64_t value, uint32_t *pos) {
 	int min = 0, max = is->length - 1, mid = -1;
 	int64_t cur = -1;
 
+	/* intset 为空直接返回 0 */
 	if (is->length == 0) {
 		*pos = 0;
 		return 0;
 	} else {
+		/* value 大于 intset 中最大的值时，pos 为 inset 的长度，
+		 * value 小于 intset 中最小的值时，post 为 0，
+		 * 不管是大于还是小于，都需要对 intset 进行扩容。 */
 		if (value > _intsetGet(is, max)) {
 			if (pos) *pos = is->length;
 			return 0;
@@ -69,9 +74,15 @@ static uint8_t intsetSearch(intset *is, uint64_t value, uint32_t *pos) {
 		}
 	}
 
+	/* 二分查找法确定 value 是否在 intset 中。 */
 	while (max >= min) {
+		/* 右移一位表示除以二。 */
 		mid = ((unsigned int)min + (unsigned int)max) >> 1;
+		/* 获取处于 mid 的值。 */
 		cur = _intsetGet(is, mid);
+		/* value > cur 时，表示 value 可能在右边值更大的区域，
+		 * value < cur 时，表示 value 可能在左边值更小的区域，
+		 * 其他情况说明找到了 value 所在的位置。 */
 		if (value > cur) {
 			min = mid + 1;
 		} else if (value < cur) {
