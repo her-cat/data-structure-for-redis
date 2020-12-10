@@ -59,7 +59,7 @@ static uint8_t intsetSearch(intset *is, uint64_t value, uint32_t *pos) {
 
 	/* intset 为空直接返回 0 */
 	if (is->length == 0) {
-		*pos = 0;
+		if (pos) *pos = 0;
 		return 0;
 	} else {
 		/* value 大于 intset 中最大的值时，pos 为 inset 的长度，
